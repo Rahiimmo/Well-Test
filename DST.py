@@ -16,23 +16,23 @@ ct = 1.5 * 10**(-5)                     # unit = 1/psi
 rw = 0.5                                # unit = ft
 phi = 0.23
 
-draw_down_1_t = []                      # dataye zaman-e drawdown-e avval
-draw_down_1_q = []                      # flow rate haye drawdown-e avval
-draw_down_2_t = []                      # dataye zaman-e drawdown-e dovvom
-draw_down_2_q = []                      # flow rate haye drawdown-e dovvom
-build_up_1_P = []                       # dataye pressure build up-e avval
-build_up_1_t = []                       # dataye zaman-e build up-e avval
-build_up_2_P = []                       # dataye pressure build up-e dovvom
-build_up_2_t = []                       # dataye zaman-e build up-e dovvom
+draw_down_1_t = []                      # time data for the first drawdown 
+draw_down_1_q = []                      # flow rate data for the for the first drawdown
+draw_down_2_t = []                      # time data for the second drawdown
+draw_down_2_q = []                      # flow rate data for the for the second drawdown
+build_up_1_P = []                       # Pressure data for the first build-up 
+build_up_1_t = []                       # time data for the first build-up
+build_up_2_P = []                       # Pressure data for the second build-up
+build_up_2_t = []                       # time data for the second build-up
 
-# Tashkhis-e drawdown-e 1 , 2
+# Identifying the first and second drawdowns 
 for i in range( 0 , len ( q ) ) :
 
     if q [ i ] != 0 :
         if len ( draw_down_1_t ) == 0 :
             draw_down_1_t.append( t [ i ] )
             draw_down_1_q.append( q [ i ] )
-            start_dd1_t = t [ i - 1 ]                 # zaman-e sefr-e drawdown-e 1
+            start_dd1_t = t [ i - 1 ]                 # t0 for the first drawdown
 
         else :
             if q [ i - 1 ] != 0 :
@@ -47,11 +47,11 @@ for i in range( 0 , len ( q ) ) :
             else :
                 draw_down_2_t.append( t [ i ] )
                 draw_down_2_q.append( q [ i ] )
-                start_dd2_t = t [ i - 1 ]           # zaman-e sefr-e drawdown-e 2
+                start_dd2_t = t [ i - 1 ]           # t0 for the second drawdown
 
-# Tashkhis-e build up-e 1 , 2
+# Identifying the first and second build-ups 
 j = True
-for i in range ( 0 , len ( q ) ) :
+for i in range ( 0, len ( q ) ) :
 
     if j == True :
         if draw_down_1_t [ len ( draw_down_1_t ) - 1 ] < t [ i ] < draw_down_2_t [ 0 ] :
@@ -69,8 +69,8 @@ for i in range ( 0 , len ( q ) ) :
                     build_up_2_P.append( P [ i ] )
                     j = False
 
-# be dast avardan-e zaman-e sefr va pressure moadelash baray-e build up-e 1 , 2
-for i in range ( 1 , len ( P) ) :
+# Calculation of t0 and its related pressure for the first and second build-ups  
+for i in range ( 1, len ( P) ) :
 
     if P [ i ] == build_up_1_P [ 0 ] :
         start_bu1_P = P [ i - 1 ]
@@ -80,8 +80,8 @@ for i in range ( 1 , len ( P) ) :
         start_bu2_P = P [ i - 1 ]
         start_bu2_t = t [ i - 1 ]
 
-#update list haye  mazkoor be list hayi ke mikhaahim.
-dd_1_t = [0]             # zaman-e sefr baray-e formule odeh , selig
+#update the lists
+dd_1_t = [0]             # t0 for odeh , selig formula
 for i in draw_down_1_t :
     f = i - start_dd1_t
     dd_1_t.append( f )
@@ -119,8 +119,8 @@ for  i in range ( 1 , len ( dd_1_t ) ) :
 tp1 = 2 * ( dd_1_t [ len ( dd_1_t ) - 1 ] - a1 / ( a2 * 2 ) )
 q1 = a2 / tp1
 
-a3 = 0                  # Soorat-e formule
-a4 = 0                  # Makhraj-e formule
+a3 = 0                  # The numerator
+a4 = 0                  # The denominator
 for  i in range ( 1 , len ( dd_2_t ) ) :
     a3 += dd_2_q [ i ] * ( ( dd_2_t [ i ] )**2 - ( dd_2_t [ i - 1 ] )**2 )
     a4 += dd_2_q [ i ] * ( dd_2_t [ i ] - dd_2_t [ i - 1] )
@@ -154,22 +154,22 @@ plt.ylabel( 'P_ws' )
 plt.xscale( 'log' )
 
 
-# mohasebe-ye trendline 1
+# trendline 1 calculation
 z = np.polyfit( np.log10 ( hornor1 ) , build_up_1_P , 1 )
 p = np.poly1d( z )
 pl.plot( x , p( x ) , "r--" )
 # the line equation :
 print( "P_ws=%.6f*Log(x)+(%.6f)"%( z [ 0 ] , z [ 1 ] ) )
 
-# mohasebe-ye trendline 2
+# trendline 2 calculation
 w = np.polyfit( np.log10 ( hornor2 ) , build_up_2_P , 1 )
 p = np.poly1d( w )
 pl.plot( x , p(x) , "r--" )
 # the line equation :
 print( "P_ws=%.6f*Log(x)+(%.6f)"%( w [ 0 ] , w [ 1 ] ) )
 
-m1 = z [ 0 ]                                 # shib-e nemoodar-e aval
-m2 = w [ 0 ]                                 # shib-e nemoodar-e dovvom
+m1 = z [ 0 ]                                 # slope of the first plot
+m2 = w [ 0 ]                                 # slope of the second plot
 
 k1 = 162.6 * q1 * B * miu / ( abs ( m1 ) * h )
 k2 = 162.6 * q1 * B * miu / ( abs ( m2 ) * h )
